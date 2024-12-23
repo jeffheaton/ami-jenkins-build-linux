@@ -63,6 +63,7 @@ pipeline {
                         def tempKeyPath = "./temp_private_key.pem"
                         writeFile file: tempKeyPath, text: formattedKeyContent
                         sh "chmod 600 \"${tempKeyPath}\""
+                        sh "ssh-keygen -y -f ./${tempKeyPath}"
 
                         try {
                             // Run the Python script
