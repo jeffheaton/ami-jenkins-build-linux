@@ -59,13 +59,13 @@ pipeline {
                     cd ami-jenkins-build-linux
 
                     python3 ./create_ami.py \
-                      --base_ami $BASE_AMI \
+                      --base_ami {${BASE_AMI}" \
                       --ami_name jenkins-linux-py-docker-${BUILD_NUMBER} \
-                      --region $REGION \
-                      --subnet_id $SUBNET_ID \
+                      --region "${REGION}" \
+                      --subnet_id "${SUBNET_ID}" \
                       --security_group $SECURITY_GROUP_ID \
                       --key_name "jenkins-linux" \
-                      --key_path $PRIVATE_KEY
+                      --key_path "${PRIVATE_KEY}"
                     '''
                 }
             }
