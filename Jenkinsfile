@@ -55,10 +55,13 @@ pipeline {
                     string(credentialsId: 'ssh-security-group-id', variable: 'SECURITY_GROUP_ID')
                 ]) {
                     script {
+                        // Replace pips with newlines in the private key content
+                        def formattedKeyContent = PRIVATE_KEY_CONTENT.replace('|', '\n')
+
                         // Write the private key to a temporary file
                         def tempKeyPath = "${WORKSPACE}/temp_private_key.pem"
-                        writeFile file: tempKeyPath, text: PRIVATE_KEY_CONTENT
-                        sh "chmod 600 '${tempKeyPath}'"
+                        writeFile file: tempKeyPath, text: formattedKeyContent
+                        sh "chmod 600 \"${tempKeyPath}\""
 
                         try {
                             // Run the Python script
@@ -70,11 +73,11 @@ pipeline {
                             --subnet_id "${SUBNET_ID}" \
                             --security_group "${SECURITY_GROUP_ID}" \
                             --key_name "jenkins-linux" \
-                            --key_path "${tempKeyPath}"
+                            --key_path \"${tempKeyPath}\"
                             """
                         } finally {
                             // Clean up the temporary private key file
-                            sh "rm -f ${tempKeyPath}"
+                            sh "rm -f \"${tempKeyPath}\""
                         }
                     }
                 }
