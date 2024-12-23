@@ -128,3 +128,38 @@ def create_ami(
 
     except Exception as e:
         print(f"ERROR: {str(e)}")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Create an AMI from a base AMI.")
+    parser.add_argument("--base_ami", type=str, required=True, help="The base AMI ID.")
+    parser.add_argument(
+        "--ami_name", type=str, required=True, help="The name of the new AMI."
+    )
+    parser.add_argument(
+        "--region", type=str, required=True, help="The AWS region to use."
+    )
+    parser.add_argument(
+        "--subnet_id", type=str, required=True, help="The Subnet ID to use."
+    )
+    parser.add_argument(
+        "--security_group", type=str, required=True, help="The Security Group ID."
+    )
+    parser.add_argument(
+        "--key_name", type=str, required=True, help="The AWS Key Pair name."
+    )
+    parser.add_argument(
+        "--key_path", type=str, required=True, help="Path to the private key file."
+    )
+
+    args = parser.parse_args()
+
+    create_ami(
+        args.base_ami,
+        args.ami_name,
+        args.region,
+        args.subnet_id,
+        args.security_group,
+        args.key_name,
+        args.key_path,
+    )
