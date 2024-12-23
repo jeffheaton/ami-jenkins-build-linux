@@ -57,6 +57,7 @@ pipeline {
                     script {
                         // Replace pips with newlines in the private key content
                         def formattedKeyContent = PRIVATE_KEY_CONTENT.replace('|', '\n')
+                        println(formattedKeyContent)
 
                         // Write the private key to a temporary file
                         def tempKeyPath = "./temp_private_key.pem"
