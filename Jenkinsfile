@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        label 'aws-ec2-linux'
+        label 'linux-py-docker'
     }
     stages {
         stage('Build AWS AMI') {
