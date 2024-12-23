@@ -55,9 +55,6 @@ pipeline {
                     string(credentialsId: 'ssh-security-group-id', variable: 'SECURITY_GROUP_ID')
                 ]) {
                     sh '''
-                    //git clone https://github.com/jeffheaton/ami-jenkins-build-linux.git
-                    //cd ami-jenkins-build-linux
-
                     python3 ./create_ami.py \
                       --base_ami {${BASE_AMI}" \
                       --ami_name jenkins-linux-py-docker-${BUILD_NUMBER} \
