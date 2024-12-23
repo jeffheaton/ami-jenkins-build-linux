@@ -62,7 +62,7 @@ def create_ami(
             )
 
         command: str = (
-            f"ssh -o StrictHostKeyChecking=no -i {key_path} ec2-user@{target_ip} 'bash -s' < init.sh"
+            f"ssh -o StrictHostKeyChecking=no -i '{key_path}' ec2-user@{target_ip} 'bash -s' < init.sh"
         )
         subprocess.run(command, shell=True, check=True)
 
