@@ -58,7 +58,7 @@ pipeline {
                         // Write the private key to a temporary file
                         def tempKeyPath = "${WORKSPACE}/temp_private_key.pem"
                         writeFile file: tempKeyPath, text: PRIVATE_KEY_CONTENT
-                        sh "chmod 600 ${tempKeyPath}"
+                        sh "chmod 600 '${tempKeyPath}'"
 
                         try {
                             // Run the Python script
