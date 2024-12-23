@@ -55,8 +55,9 @@ pipeline {
                     string(credentialsId: 'ssh-security-group-id', variable: 'SECURITY_GROUP_ID')
                 ]) {
                     sh '''
+
                     python3 ./create_ami.py \
-                      --base_ami {${BASE_AMI}" \
+                      --base_ami "${BASE_AMI}" \
                       --ami_name jenkins-linux-py-docker-${BUILD_NUMBER} \
                       --region "${REGION}" \
                       --subnet_id "${SUBNET_ID}" \
