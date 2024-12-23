@@ -66,7 +66,7 @@ pipeline {
                         try {
                             // Run the Python script
                             sh """
-                            python3 ./create_ami.py \
+                            unbuffer python3 ./create_ami.py \
                             --base_ami "${BASE_AMI}" \
                             --ami_name "jenkins-linux-py-docker-${BUILD_NUMBER}" \
                             --region "${REGION}" \

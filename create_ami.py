@@ -34,16 +34,22 @@ def wait_for_ssh(
                 f"ec2-user@{target_ip}",
                 "true",  # A minimal command to test SSH connection
             ]
-            subprocess.run(
+            result = subprocess.run(
                 command,
                 check=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
             )
             print("SSH is now available.")
             return
-        except subprocess.CalledProcessError:
-            print(f"SSH not ready yet, attempt {attempt + 1}/{retries}...")
+        except subprocess.CalledProcessError as e:
+            print(f"Attempt {attempt + 1}/{retries} failed:")
+            print(f"Command: {' '.join(command)}")
+            print(f"Error: {e.stderr.strip()}")
+            time.sleep(delay)
+        except Exception as e:
+            print(f"Unexpected error: {str(e)}")
             time.sleep(delay)
 
     raise TimeoutError(
