@@ -1,22 +1,40 @@
 import boto3
 import time
 import subprocess
+import os
 from typing import Any
 import argparse
 
 
-def create_ami(base_ami: str, ami_name: str, region: str) -> None:
+def create_ami(
+    base_ami: str,
+    ami_name: str,
+    region: str,
+    subnet_id: str,
+    security_group: str,
+    key_name: str,
+    key_path: str,
+) -> None:
     ec2 = boto3.resource("ec2", region_name=region)
     client = boto3.client("ec2", region_name=region)
+
     try:
-        # Step 1: Launch an EC2 instance from the base AMI
+        # Step 1: Launch an EC2 instance in the specified subnet
         print("Launching EC2 instance...")
         instance = ec2.create_instances(
             ImageId=base_ami,
             MinCount=1,
             MaxCount=1,
             InstanceType="t2.micro",
-            KeyName="your-key-name",  # Replace with your key pair name
+            KeyName=key_name,
+            NetworkInterfaces=[
+                {
+                    "SubnetId": subnet_id,
+                    "DeviceIndex": 0,
+                    "AssociatePublicIpAddress": False,  # Ensure no public IP
+                    "Groups": [security_group],
+                }
+            ],
             TagSpecifications=[
                 {
                     "ResourceType": "instance",
@@ -32,10 +50,19 @@ def create_ami(base_ami: str, ami_name: str, region: str) -> None:
         instance.wait_until_running()
         instance.load()
 
+        # Use the private IP address for the SSH connection
+        target_ip = instance.private_ip_address
+        print(f"Connecting to instance at private IP: {target_ip}")
+
         # Step 2: Run the initialization script
         print("Running init.sh script...")
+        if not os.path.exists(key_path):
+            raise FileNotFoundError(
+                f"The private key file '{key_path}' does not exist."
+            )
+
         command: str = (
-            f"ssh -o StrictHostKeyChecking=no -i your-key.pem ec2-user@{instance.public_dns_name} 'bash -s' < init.sh"
+            f"ssh -o StrictHostKeyChecking=no -i {key_path} ec2-user@{target_ip} 'bash -s' < init.sh"
         )
         subprocess.run(command, shell=True, check=True)
 
@@ -77,7 +104,27 @@ if __name__ == "__main__":
     parser.add_argument(
         "--region", type=str, required=True, help="The AWS region to use."
     )
+    parser.add_argument(
+        "--subnet_id", type=str, required=True, help="The Subnet ID to use."
+    )
+    parser.add_argument(
+        "--security_group", type=str, required=True, help="The Security Group ID."
+    )
+    parser.add_argument(
+        "--key_name", type=str, required=True, help="The AWS Key Pair name."
+    )
+    parser.add_argument(
+        "--key_path", type=str, required=True, help="Path to the private key file."
+    )
 
     args = parser.parse_args()
 
-    create_ami(args.base_ami, args.ami_name, args.region)
+    create_ami(
+        args.base_ami,
+        args.ami_name,
+        args.region,
+        args.subnet_id,
+        args.security_group,
+        args.key_name,
+        args.key_path,
+    )
