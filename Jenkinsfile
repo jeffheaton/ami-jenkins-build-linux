@@ -59,7 +59,7 @@ pipeline {
                         def formattedKeyContent = PRIVATE_KEY_CONTENT.replace('|', '\n')
 
                         // Write the private key to a temporary file
-                        def tempKeyPath = "${WORKSPACE}/temp_private_key.pem"
+                        def tempKeyPath = "./temp_private_key.pem"
                         writeFile file: tempKeyPath, text: formattedKeyContent
                         sh "chmod 600 \"${tempKeyPath}\""
 
