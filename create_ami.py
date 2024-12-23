@@ -1,5 +1,9 @@
+import boto3
 import time
 import subprocess
+import os
+from typing import Any
+import argparse
 
 
 def wait_for_ssh(
@@ -16,18 +20,22 @@ def wait_for_ssh(
     print(f"Waiting for SSH to become available on {target_ip}...")
     for attempt in range(retries):
         try:
+            # Use SSH with `true` to avoid side effects and simply test connection
+            command = [
+                "ssh",
+                "-o",
+                "StrictHostKeyChecking=no",
+                "-o",
+                "BatchMode=yes",
+                "-o",
+                "ConnectTimeout=5",
+                "-i",
+                key_path,
+                f"ec2-user@{target_ip}",
+                "true",  # A minimal command to test SSH connection
+            ]
             subprocess.run(
-                [
-                    "ssh",
-                    "-o",
-                    "StrictHostKeyChecking=no",
-                    "-o",
-                    "ConnectTimeout=5",
-                    "-i",
-                    key_path,
-                    f"ec2-user@{target_ip}",
-                    "echo 'SSH is ready'",
-                ],
+                command,
                 check=True,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
