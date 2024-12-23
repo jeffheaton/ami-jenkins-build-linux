@@ -57,13 +57,11 @@ pipeline {
                     script {
                         // Replace pips with newlines in the private key content
                         def formattedKeyContent = PRIVATE_KEY_CONTENT.replace('|', '\n')
-                        println(formattedKeyContent)
 
                         // Write the private key to a temporary file
                         def tempKeyPath = "./temp_private_key.pem"
                         writeFile file: tempKeyPath, text: formattedKeyContent
                         sh "chmod 600 \"${tempKeyPath}\""
-                        sh "ssh-keygen -y -f ./${tempKeyPath}"
 
                         try {
                             // Run the Python script

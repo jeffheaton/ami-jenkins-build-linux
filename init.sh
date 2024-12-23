@@ -49,3 +49,5 @@ fi
 
 echo "Initialization script complete. Please reboot if necessary."
 
+rm -- "$0"
+
