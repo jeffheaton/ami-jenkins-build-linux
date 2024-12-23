@@ -19,7 +19,7 @@ pipeline {
         stage('Assume AWS Role') {
             steps {
                 withCredentials([
-                    string(credentialsId: 'role-arn', variable: 'ROLE_ARN') // Securely inject ROLE ARN
+                    string(credentialsId: 'jenkins-role-build-ami-linux-general', variable: 'ROLE_ARN') // Securely inject ROLE ARN
                 ]) {
                     script {
                         def assumeRoleOutput = sh(
