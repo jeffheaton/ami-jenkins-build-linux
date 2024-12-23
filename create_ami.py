@@ -1,11 +1,3 @@
-import boto3
-import time
-import subprocess
-import os
-from typing import Any
-import argparse
-
-
 def create_ami(
     base_ami: str,
     ami_name: str,
@@ -50,6 +42,12 @@ def create_ami(
         instance.wait_until_running()
         instance.load()
 
+        # Wait for the instance to pass status checks
+        print("Waiting for the instance to pass status checks...")
+        instance_id = instance.id
+        waiter = client.get_waiter("instance_status_ok")
+        waiter.wait(InstanceIds=[instance_id])
+
         # Use the private IP address for the SSH connection
         target_ip = instance.private_ip_address
         print(f"Connecting to instance at private IP: {target_ip}")
@@ -93,38 +91,3 @@ def create_ami(
 
     except Exception as e:
         print(f"ERROR: {str(e)}")
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Create an AMI from a base AMI.")
-    parser.add_argument("--base_ami", type=str, required=True, help="The base AMI ID.")
-    parser.add_argument(
-        "--ami_name", type=str, required=True, help="The name of the new AMI."
-    )
-    parser.add_argument(
-        "--region", type=str, required=True, help="The AWS region to use."
-    )
-    parser.add_argument(
-        "--subnet_id", type=str, required=True, help="The Subnet ID to use."
-    )
-    parser.add_argument(
-        "--security_group", type=str, required=True, help="The Security Group ID."
-    )
-    parser.add_argument(
-        "--key_name", type=str, required=True, help="The AWS Key Pair name."
-    )
-    parser.add_argument(
-        "--key_path", type=str, required=True, help="Path to the private key file."
-    )
-
-    args = parser.parse_args()
-
-    create_ami(
-        args.base_ami,
-        args.ami_name,
-        args.region,
-        args.subnet_id,
-        args.security_group,
-        args.key_name,
-        args.key_path,
-    )
