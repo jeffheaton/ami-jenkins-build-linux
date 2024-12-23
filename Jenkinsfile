@@ -54,17 +54,16 @@ pipeline {
                     string(credentialsId: 'private-subnet-id', variable: 'SUBNET_ID'),
                     string(credentialsId: 'ssh-security-group-id', variable: 'SECURITY_GROUP_ID')
                 ]) {
-                    sh '''
-
+                    sh """
                     python3 ./create_ami.py \
-                      --base_ami "${BASE_AMI}" \
-                      --ami_name jenkins-linux-py-docker-${BUILD_NUMBER} \
-                      --region "${REGION}" \
-                      --subnet_id "${SUBNET_ID}" \
-                      --security_group $SECURITY_GROUP_ID \
-                      --key_name "jenkins-linux" \
-                      --key_path "${PRIVATE_KEY}"
-                    '''
+                    --base_ami "${BASE_AMI}" \
+                    --ami_name "jenkins-linux-py-docker-${BUILD_NUMBER}" \
+                    --region "${REGION}" \
+                    --subnet_id "${SUBNET_ID}" \
+                    --security_group "${SECURITY_GROUP_ID}" \
+                    --key_name "jenkins-linux" \
+                    --key_path "${PRIVATE_KEY}"
+                    """
                 }
             }
         }
