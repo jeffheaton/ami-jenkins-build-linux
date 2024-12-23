@@ -1,11 +1,11 @@
 pipeline {
-    agent any
+    agent {
+        label 'aws-ec2-linux'
+    }
     stages {
-        stage('Build') {
+        stage('Build AWS AMI') {
             steps {
-                node {
-                    sh 'echo "Hello, World!"'
-                }
+                sh 'echo "Hello from EC2 node!"'
             }
         }
     }
