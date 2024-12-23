@@ -50,9 +50,9 @@ pipeline {
         stage('Run Python Script') {
             steps {
                 withCredentials([
-                    file(credentialsId: 'private-key-ami', variable: 'PRIVATE_KEY'),
-                    string(credentialsId: 'subnet-id', variable: 'SUBNET_ID'),
-                    string(credentialsId: 'security-group-id', variable: 'SECURITY_GROUP_ID')
+                    file(credentialsId: 'jenkins-aws-key', variable: 'PRIVATE_KEY'),
+                    string(credentialsId: 'private-subnet-id', variable: 'SUBNET_ID'),
+                    string(credentialsId: 'ssh-security-group-id', variable: 'SECURITY_GROUP_ID')
                 ]) {
                     sh '''
                     git clone https://github.com/jeffheaton/ami-jenkins-build-linux.git
