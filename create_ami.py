@@ -1,11 +1,13 @@
 import boto3
 import time
 import subprocess
+from typing import Any
+import argparse
 
 
-def create_ami(base_ami, ami_name):
-    ec2 = boto3.resource("ec2")
-    client = boto3.client("ec2")
+def create_ami(base_ami: str, ami_name: str, region: str) -> None:
+    ec2 = boto3.resource("ec2", region_name=region)
+    client = boto3.client("ec2", region_name=region)
     try:
         # Step 1: Launch an EC2 instance from the base AMI
         print("Launching EC2 instance...")
@@ -32,7 +34,9 @@ def create_ami(base_ami, ami_name):
 
         # Step 2: Run the initialization script
         print("Running init.sh script...")
-        command = f"ssh -o StrictHostKeyChecking=no -i your-key.pem ec2-user@{instance.public_dns_name} 'bash -s' < init.sh"
+        command: str = (
+            f"ssh -o StrictHostKeyChecking=no -i your-key.pem ec2-user@{instance.public_dns_name} 'bash -s' < init.sh"
+        )
         subprocess.run(command, shell=True, check=True)
 
         # Step 3: Stop the instance
@@ -42,11 +46,11 @@ def create_ami(base_ami, ami_name):
 
         # Step 4: Create an AMI
         print("Creating AMI...")
-        response = client.create_image(
+        response: Any = client.create_image(
             InstanceId=instance.id, Name=ami_name, NoReboot=True
         )
 
-        ami_id = response["ImageId"]
+        ami_id: str = response["ImageId"]
 
         # Wait for the AMI to become available
         print(f"Waiting for the AMI {ami_id} to become available...")
@@ -65,14 +69,15 @@ def create_ami(base_ami, ami_name):
 
 
 if __name__ == "__main__":
-    import argparse
-
     parser = argparse.ArgumentParser(description="Create an AMI from a base AMI.")
     parser.add_argument("--base_ami", type=str, required=True, help="The base AMI ID.")
     parser.add_argument(
         "--ami_name", type=str, required=True, help="The name of the new AMI."
     )
+    parser.add_argument(
+        "--region", type=str, required=True, help="The AWS region to use."
+    )
 
     args = parser.parse_args()
 
-    create_ami(args.base_ami, args.ami_name)
+    create_ami(args.base_ami, args.ami_name, args.region)
