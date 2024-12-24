@@ -47,7 +47,7 @@ if ! grep -q "export PATH=\$PATH:$POETRY_HOME/bin" /home/ec2-user/.bashrc; then
     sudo chown ec2-user:ec2-user /home/ec2-user/.bashrc /home/ec2-user/.bash_profile
 fi
 
-echo "Initialization script complete. Please reboot if necessary."
+# Install poetry-plugin-export for ec2-user
+sudo -u ec2-user bash -c "source $POETRY_HOME/bin/activate && poetry self add poetry-plugin-export && poetry plugin list"
 
 rm -- "$0"
-
