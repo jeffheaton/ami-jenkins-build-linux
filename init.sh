@@ -49,5 +49,3 @@ fi
 
 # Install poetry-plugin-export for ec2-user
 sudo -u ec2-user bash -c "source $POETRY_HOME/bin/activate && poetry self add poetry-plugin-export && poetry self show plugins"
-
-rm init.sh
