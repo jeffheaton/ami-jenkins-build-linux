@@ -48,6 +48,6 @@ if ! grep -q "export PATH=\$PATH:$POETRY_HOME/bin" /home/ec2-user/.bashrc; then
 fi
 
 # Install poetry-plugin-export for ec2-user
-sudo -u ec2-user bash -c "source $POETRY_HOME/bin/activate && poetry self add poetry-plugin-export && poetry plugin list"
+sudo -u ec2-user bash -c "source $POETRY_HOME/bin/activate && poetry self add poetry-plugin-export && poetry self show plugins"
 
-rm -- "$0"
+rm init.sh
