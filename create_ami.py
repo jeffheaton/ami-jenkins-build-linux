@@ -69,6 +69,8 @@ def create_ami(
     ec2 = boto3.resource("ec2", region_name=region)
     client = boto3.client("ec2", region_name=region)
 
+    instance = None  # Initialize instance variable for scope handling
+
     try:
         # Launch the EC2 instance
         print("Launching EC2 instance...")
@@ -134,14 +136,21 @@ def create_ami(
         waiter = client.get_waiter("image_available")
         waiter.wait(ImageIds=[ami_id])
 
-        print("Terminating the instance...")
-        instance.terminate()
-        instance.wait_until_terminated()
-
         print(f"AMI created: {ami_id}")
 
     except Exception as e:
         print(f"ERROR: {str(e)}")
+        raise  # Re-raise the exception after logging
+
+    finally:
+        # Ensure the instance is terminated
+        if instance:
+            instance.reload()  # Reload instance state
+            if instance.state["Name"] != "terminated":
+                print("Ensuring the instance is terminated...")
+                instance.terminate()
+                instance.wait_until_terminated()
+                print("Instance terminated.")
 
 
 if __name__ == "__main__":

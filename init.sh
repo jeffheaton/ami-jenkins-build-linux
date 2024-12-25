@@ -14,7 +14,7 @@ fi
 # Install Git
 sudo dnf install -y git
 
-# Install Python 3 and pipx
+# Install Python 3, pip, and pipx
 sudo dnf install -y python3 python3-pip
 python3 -m pip install --upgrade --user pip pipx
 python3 -m pipx ensurepath
@@ -29,6 +29,22 @@ sudo -u ec2-user newgrp docker <<EOF
 # This section ensures Docker is fully usable for ec2-user
 echo "Docker group refreshed for ec2-user."
 EOF
+
+# Install Development Tools and required build dependencies
+sudo dnf groupinstall -y "Development Tools"
+sudo dnf install -y gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel wget tar
+
+# Install pyenv for ec2-user
+PYENV_ROOT="/home/ec2-user/.pyenv"
+if [ ! -d "$PYENV_ROOT" ]; then
+    sudo -u ec2-user bash -c "curl https://pyenv.run | bash"
+fi
+
+# Set up pyenv and install Python 3.12.0 for ec2-user
+sudo -u ec2-user bash -c "export PATH=\"\$PYENV_ROOT/bin:\$PATH\"; eval \"\$(pyenv init --path)\"; eval \"\$(pyenv virtualenv-init -)\"; pyenv install -s 3.12.0; pyenv global 3.12.0"
+
+# Upgrade pip and install Poetry globally
+sudo -u ec2-user bash -c "export PATH=\"\$PYENV_ROOT/bin:\$PATH\"; eval \"\$(pyenv init --path)\"; eval \"\$(pyenv virtualenv-init -)\"; pip install --upgrade pip; pip install poetry"
 
 # Install Poetry for ec2-user
 POETRY_HOME="/home/ec2-user/.poetry"
