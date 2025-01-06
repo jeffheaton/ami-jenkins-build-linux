@@ -14,10 +14,10 @@ fi
 # Install Git
 sudo dnf install -y git
 
-# Install Python 3, pip, and pipx
-sudo dnf install -y python3 python3-pip
-python3 -m pip install --upgrade --user pip pipx
-python3 -m pipx ensurepath
+# Install Python 3.12, pip, and pipx
+sudo dnf install -y python3.12 python3.12-pip python3.12-setuptools
+python3.12 -m pip install --upgrade --user pip pipx
+python3.12 -m pipx ensurepath
 
 # Install Docker
 sudo dnf install -y docker
