@@ -20,7 +20,6 @@ def wait_for_ssh(
     print(f"Waiting for SSH to become available on {target_ip}...")
     for attempt in range(retries):
         try:
-            # Use SSH with `true` to avoid side effects and simply test connection
             command = [
                 "ssh",
                 "-o",
@@ -32,7 +31,7 @@ def wait_for_ssh(
                 "-i",
                 key_path,
                 f"ec2-user@{target_ip}",
-                "true",  # A minimal command to test SSH connection
+                "true",
             ]
             result = subprocess.run(
                 command,
@@ -44,9 +43,7 @@ def wait_for_ssh(
             print("SSH is now available.")
             return
         except subprocess.CalledProcessError as e:
-            print(f"Attempt {attempt + 1}/{retries} failed:")
-            print(f"Command: {' '.join(command)}")
-            print(f"Error: {e.stderr.strip()}")
+            print(f"Attempt {attempt + 1}/{retries} failed: {e.stderr.strip()}")
             time.sleep(delay)
         except Exception as e:
             print(f"Unexpected error: {str(e)}")
@@ -65,14 +62,14 @@ def create_ami(
     security_group: str,
     key_name: str,
     key_path: str,
+    volume_size: int,
 ) -> None:
     ec2 = boto3.resource("ec2", region_name=region)
     client = boto3.client("ec2", region_name=region)
 
-    instance = None  # Initialize instance variable for scope handling
+    instance = None
 
     try:
-        # Launch the EC2 instance
         print("Launching EC2 instance...")
         instance = ec2.create_instances(
             ImageId=base_ami,
@@ -88,6 +85,16 @@ def create_ami(
                     "Groups": [security_group],
                 }
             ],
+            BlockDeviceMappings=[
+                {
+                    "DeviceName": "/dev/xvda",
+                    "Ebs": {
+                        "VolumeSize": volume_size,
+                        "DeleteOnTermination": True,
+                        "VolumeType": "gp3",
+                    },
+                }
+            ],
             TagSpecifications=[
                 {
                     "ResourceType": "instance",
@@ -98,30 +105,24 @@ def create_ami(
             ],
         )[0]
 
-        # Wait for the instance to be running
         print("Waiting for the instance to run...")
         instance.wait_until_running()
         instance.load()
 
-        # Wait for the instance to pass status checks
         print("Waiting for the instance to pass status checks...")
         instance_id = instance.id
         waiter = client.get_waiter("instance_status_ok")
         waiter.wait(InstanceIds=[instance_id])
 
-        # Use the private IP for SSH
         target_ip = instance.private_ip_address
         print(f"Instance private IP: {target_ip}")
 
-        # Wait for SSH to become available
         wait_for_ssh(target_ip, key_path)
 
-        # Run the initialization script
         print("Running init.sh script...")
         command = f"ssh -o StrictHostKeyChecking=no -i '{key_path}' ec2-user@{target_ip} 'bash -s' < init.sh"
         subprocess.run(command, shell=True, check=True)
 
-        # Stop, create AMI, and terminate as before
         print("Stopping the instance...")
         instance.stop()
         instance.wait_until_stopped()
@@ -140,12 +141,11 @@ def create_ami(
 
     except Exception as e:
         print(f"ERROR: {str(e)}")
-        raise  # Re-raise the exception after logging
+        raise
 
     finally:
-        # Ensure the instance is terminated
         if instance:
-            instance.reload()  # Reload instance state
+            instance.reload()
             if instance.state["Name"] != "terminated":
                 print("Ensuring the instance is terminated...")
                 instance.terminate()
@@ -174,6 +174,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--key_path", type=str, required=True, help="Path to the private key file."
     )
+    parser.add_argument(
+        "--volume_size",
+        type=int,
+        required=False,
+        default=30,
+        help="Size of the root EBS volume in GB.",
+    )
 
     args = parser.parse_args()
 
@@ -185,4 +192,5 @@ if __name__ == "__main__":
         args.security_group,
         args.key_name,
         args.key_path,
+        args.volume_size,
     )
