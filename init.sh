@@ -19,6 +19,11 @@ sudo dnf install -y python3.12 python3.12-pip python3.12-setuptools
 python3.12 -m pip install --upgrade --user pip pipx
 python3.12 -m pipx ensurepath
 
+# Install Python 3.11, pip, and pipx
+sudo dnf install -y python3.11 python3.11-pip python3.11-setuptools
+python3.11 -m pip install --upgrade --user pip pipx
+python3.11 -m pipx ensurepath
+
 # Install Docker
 sudo dnf install -y docker
 sudo systemctl enable --now docker
