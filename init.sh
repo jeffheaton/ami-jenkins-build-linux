@@ -14,8 +14,12 @@ fi
 # Install Git
 sudo dnf install -y git
 
+            sudo yum update -y
+            sudo yum install -y mesa-libGL mesa-libGL-devel
+
 # Install Python 3.12, pip, and pipx
 sudo dnf install -y python3.12 python3.12-pip python3.12-setuptools
+sudo dnf install -y mesa-libGL mesa-libGL-devel
 python3.12 -m pip install --upgrade --user pip pipx
 python3.12 -m pipx ensurepath
 
