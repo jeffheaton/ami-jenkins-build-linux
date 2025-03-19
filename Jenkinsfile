@@ -12,7 +12,7 @@ pipeline {
             steps {
                 sh '''
                 # Install boto3
-                sudo pip3 install boto3
+                sudo pip3.12 install boto3
                 '''
             }
         }
@@ -66,7 +66,7 @@ pipeline {
                         try {
                             // Run the Python script
                             sh """
-                            python3 -u ./create_ami.py \
+                            python3.12 -u ./create_ami.py \
                             --base_ami "${BASE_AMI}" \
                             --ami_name "jenkins-linux-py-docker-${BUILD_NUMBER}" \
                             --region "${REGION}" \
