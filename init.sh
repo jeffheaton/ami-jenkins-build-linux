@@ -45,8 +45,9 @@ if [ ! -d "$PYENV_ROOT" ]; then
     sudo -u ec2-user bash -c "curl https://pyenv.run | bash"
 fi
 
-# Set up pyenv and install Python 3.12.0 for ec2-user
+# Set up pyenv and install Python 3.12.0 & 3.11.0 for ec2-user
 sudo -u ec2-user bash -c "export PATH=\"\$PYENV_ROOT/bin:\$PATH\"; eval \"\$(pyenv init --path)\"; eval \"\$(pyenv virtualenv-init -)\"; pyenv install -s 3.12.0; pyenv global 3.12.0"
+sudo -u ec2-user bash -c "export PATH=\"\$PYENV_ROOT/bin:\$PATH\"; eval \"\$(pyenv init --path)\"; eval \"\$(pyenv virtualenv-init -)\"; pyenv install -s 3.11.0; pyenv global 3.11.0"
 
 # Upgrade pip and install Poetry globally
 sudo -u ec2-user bash -c "export PATH=\"\$PYENV_ROOT/bin:\$PATH\"; eval \"\$(pyenv init --path)\"; eval \"\$(pyenv virtualenv-init -)\"; pip install --upgrade pip; pip install poetry"
