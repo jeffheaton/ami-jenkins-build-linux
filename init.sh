@@ -75,3 +75,44 @@ fi
 
 # Install poetry-plugin-export for ec2-user
 sudo -u ec2-user bash -c "source $POETRY_HOME/bin/activate && poetry self add poetry-plugin-export && poetry self show plugins"
+
+# --- ensure unique host keys per instance (not baked into AMI) ---
+sudo rm -f /etc/ssh/ssh_host_*_key /etc/ssh/ssh_host_*_key.pub
+sudo systemctl enable sshd-keygen@ed25519.service || true
+sudo systemctl enable sshd-keygen@ecdsa.service || true
+sudo systemctl enable sshd-keygen@rsa.service || true
+
+# --- script to emit keys to the EC2 console on first boot ---
+sudo tee /usr/local/sbin/emit-ssh-hostkeys-to-console.sh >/dev/null <<'EOF'
+#!/bin/bash
+set -euo pipefail
+for i in {1..60}; do
+  ls /etc/ssh/ssh_host_*_key.pub >/dev/null 2>&1 && break
+  sleep 1
+done
+for f in /etc/ssh/ssh_host_*_key.pub; do
+  [ -f "$f" ] || continue
+  read -r alg key _ < "$f"
+  printf "%s %s\n" "$alg" "$key"
+done | tee /dev/console
+EOF
+sudo chmod 0755 /usr/local/sbin/emit-ssh-hostkeys-to-console.sh
+
+# --- systemd unit: run once on first boot ---
+sudo tee /etc/systemd/system/emit-ssh-hostkeys-to-console.service >/dev/null <<'EOF'
+[Unit]
+Description=Emit SSH host public keys to EC2 console (first boot)
+After=network.target sshd.service
+ConditionFirstBoot=yes
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/emit-ssh-hostkeys-to-console.sh
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable emit-ssh-hostkeys-to-console.service
+
